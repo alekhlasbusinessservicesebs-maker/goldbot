@@ -4,28 +4,26 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# بيانات تليجرام بتاعتك المباشرة والثابتة
 TELEGRAM_TOKEN = "8871528209:AAEg5xRXZDahlu4VwMVmkM1b7qChGYbbJe0"
 CHAT_ID = "5760283457"
 
-# قائمة لتخزين آخر الأسعار لحساب اتجاه السوق البسيط (SMA)
 price_history = []
 
 @app.route('/')
 def home():
     global price_history
     try:
-        # استخدام رابط الـ API المستقر تماماً من الكود الأول
-        response = requests.get("https://api.gold-api.com/price/XAU", timeout=5)
+        response = requests.get("https://api.gold-api.com/price/XAU", timeout=8)
+        if response.status_code != 200:
+            return "API is sleeping", 200
+            
         data = response.json()
         current_price = float(data.get('price', 2500.00))
         
-        # إضافة السعر للقائمة (نحتفظ بآخر أسعار لحساب المتوسط)
         price_history.append(current_price)
         if len(price_history) > 5:
             price_history.pop(0)
             
-        # التحليل الذكي بناءً على المتوسط البسيط (SMA)
         if len(price_history) >= 2:
             sma = sum(price_history) / len(price_history)
             if current_price >= sma:
@@ -79,10 +77,10 @@ def home():
         }
         
         requests.post(url, json=payload, timeout=5)
-        return f"Smart Signal Sent Successfully! Price: {current_price}", 200
+        return f"Signal Sent! Price: {current_price}", 200
 
     except Exception as e:
-        return f"Error: {str(e)}", 200
+        return f"Error handled: {str(e)}", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
