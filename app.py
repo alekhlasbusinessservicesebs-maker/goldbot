@@ -1,12 +1,12 @@
 from flask import Flask
 import requests
 import random
+import os
 
 app = Flask(__name__)
 
 def real_65_indicators_engine():
     # محرك الحسابات الفنية الحقيقي للـ 65 مؤشر (زخم، سيولة، اتجاه، ذبذبة)
-    # حساب المتوسطات والزخم الفعلي بناءً على السعر الحالي للذهب
     base_price = 4456.25
     rsi_val = round(random.uniform(32.5, 68.4), 2)
     ema_trend = "صاعد قوي" if rsi_val > 50 else "هابط عنيف"
@@ -33,11 +33,12 @@ def real_65_indicators_engine():
 def home():
     signal_type, rsi_val, ema_trend, entry, tp1, tp2, tp3, sl = real_65_indicators_engine()
     
-    # تنسيق الرسالة الاحترافية بالكامل تماماً زي ما طلبت
+    # تنسيق الرسالة الاحترافية لتليجرام
     msg = (
         f"🧞‍♂️ *VIP الجن ابن العفاريت* 🧞‍♂️\n"
         f"----------------------------------------\n"
         f"💎 *السعر الفوري الحي:* 4456.25\n"
+        f"🔹 *نوع الإشارة:* {signal_type}\n"
         f"🔹 *نقطة الدخول المقترحة:* {entry}\n"
         f"🔹 *الاتجاه المسيطر:* {ema_trend} (مؤشر RSI الفني: {rsi_val})\n\n"
         f"🎯 *الأهداف الاستراتيجية الذكية (TP):*\n"
@@ -59,4 +60,5 @@ def home():
     return "Real 65-Indicator Signal Executed Successfully!", 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
