@@ -1,65 +1,61 @@
-from flask import Flask
-import requests
-import random
 import os
+import yfinance as yf
+import pandas_ta as ta
+import pandas as pd
+from flask import Flask
+from telegram import Bot
+import asyncio
 
 app = Flask(__name__)
 
-def real_65_indicators_engine():
-    # محرك الحسابات الفنية الحقيقي للـ 65 مؤشر
-    base_price = 4456.25
-    rsi_val = round(random.uniform(32.5, 68.4), 2)
-    ema_trend = "صاعد قوي" if rsi_val > 50 else "هابط عنيف"
-    
-    if rsi_val > 50:
-        signal_type = "شراء (BUY) 🟢"
-        entry = base_price
-        tp1 = round(entry + 3.50, 2)
-        tp2 = round(entry + 7.00, 2)
-        tp3 = round(entry + 11.50, 2)
-        sl = round(entry - 4.50, 2)
-    else:
-        signal_type = "بيع (SELL) 🔴"
-        entry = base_price
-        tp1 = round(entry - 3.50, 2)
-        tp2 = round(entry - 7.00, 2)
-        tp3 = round(entry - 11.50, 2)
-        sl = round(entry + 4.50, 2)
+# بيانات التوكن والـ Chat ID المحدثة
+TELEGRAM_TOKEN = "8871528209:AAElReV2Tv2j2xTpmYR6IGDeo5UTQqTsB1k"
+CHAT_ID = "5760283457"
+
+async def send_signal():
+    try:
+        # 1. سحب بيانات الذهب الحقيقية (آخر 5 أيام بفاصل ساعة)
+        gold = yf.Ticker("GC=F") 
+        data = gold.history(period="5d", interval="1h")
         
-    return signal_type, rsi_val, ema_trend, entry, tp1, tp2, tp3, sl
+        if data.empty:
+            return "No data found"
+
+        # 2. حساب مؤشر RSI الحقيقي باستخدام pandas_ta
+        rsi = ta.rsi(data['Close'], length=14)
+        current_rsi = rsi.iloc[-1]
+        current_price = data['Close'].iloc[-1]
+
+        # 3. لوجيك الإشارة (احترافي ودقيق)
+        signal_type = "شراء BUY 🟢" if current_rsi < 30 else ("بيع SELL 🔴" if current_rsi > 70 else "انتظار (No Signal)")
+        
+        if signal_type == "انتظار (No Signal)":
+            return "Market in neutral zone, no signal sent."
+
+        # 4. تنسيق الرسالة الاحترافية
+        message = (
+            f"🔥 *Mody Luck Gold System (Live)* 🔥\n"
+            f"---------------------------\n"
+            f"💎 السعر الفوري: {current_price:.2f}\n"
+            f"💎 نوع الإشارة: {signal_type}\n"
+            f"📊 مؤشر RSI الحقيقي: {current_rsi:.2f}\n"
+            f"---------------------------\n"
+            f"🎯 الأهداف (TP): {current_price+5:.2f}, {current_price+10:.2f}\n"
+            f"🛡 حماية (SL): {current_price-3:.2f}\n"
+        )
+
+        bot = Bot(token=TELEGRAM_TOKEN)
+        await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='Markdown')
+        return "Signal Sent Successfully"
+
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @app.route('/')
 def home():
-    # استدعاء محرك المؤشرات الـ 65
-    signal_type, rsi_val, ema_trend, entry, tp1, tp2, tp3, sl = real_65_indicators_engine()
-    
-    # تنسيق الرسالة الاحترافية لتليجرام
-    msg = (
-        f"🧞‍♂️ *VIP الجن ابن العفاريت* 🧞‍♂️\n"
-        f"----------------------------------------\n"
-        f"💎 *السعر الفوري الحي:* 4456.25\n"
-        f"🔹 *نوع الإشارة:* {signal_type}\n"
-        f"🔹 *نقطة الدخول المقترحة:* {entry}\n"
-        f"🔹 *الاتجاه المسيطر:* {ema_trend} (مؤشر RSI الفني: {rsi_val})\n\n"
-        f"🎯 *الأهداف الاستراتيجية الذكية (TP):*\n"
-        f"• *TP1:* {tp1}\n"
-        f"• *TP2:* {tp2}\n"
-        f"• *TP3:* {tp3}\n\n"
-        f"🛑 *حماية الخسارة الآمنة (SL):* {sl}\n"
-        f"----------------------------------------\n"
-        f"⚙️ *محلل فني حقيقي عبر حساب مؤشر الزخم (Calculation Engine)*\n"
-        f"©️ *Mody Luck Gold System*"
-    )
-    
-    # إرسال الرسالة إلى تليجرام أوتوماتيكياً عند زيارة الرابط
-    requests.post(
-        "https://api.telegram.org/bot8871528209:AAF1zPGdQ7qYU0hBexagGSsdNO_-kV1ZBcU/sendMessage", 
-        json={"chat_id": "5760283457", "text": msg, "parse_mode": "Markdown"}
-    )
-    
-    return "Signal Sent Successfully to Telegram!", 200
+    # تشغيل المهمة غير المتزامنة
+    result = asyncio.run(send_signal())
+    return result
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    print(f"Starting server on port {port}") # التعديل هنا في آخر سطرين لإجبار رندر على التحديث
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
