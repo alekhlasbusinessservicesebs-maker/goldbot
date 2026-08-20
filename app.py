@@ -1,16 +1,13 @@
 import os
-import time
 import requests
 from flask import Flask
 
 app = Flask(__name__)
 
-# استدعاء التوكن والتشات آي دي من إعدادات رندر
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 def get_gold_price():
-    """سحب السعر الفوري بأمان تام"""
     try:
         url = "https://www.gold-api.com/api/XAU/USD"
         response = requests.get(url, timeout=5)
@@ -22,7 +19,6 @@ def get_gold_price():
     return None
 
 def send_telegram_message(message):
-    """إرسال رسالة لتليجرام"""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         return
     try:
@@ -40,43 +36,26 @@ def send_telegram_message(message):
 def home():
     price = get_gold_price()
     if price:
-        return f"XAUUSD Bot is Live! Current Gold Price: {price}"
-    return "XAUUSD Bot is Running, connecting to market..."
-
-# تشغيل لوب خلفي آمن وخفيف جداً
-import threading
-
-def background_loop():
-    # ننتظر دقيقة لحد ما السيرفر يقوم تماماً
-    time.sleep(60)
-    while True:
-        try:
-            price = get_gold_price()
-            if price:
-                # حسابات ذكية مبسطة وآمنة تماماً
-                sl = price - 4.5
-                tp1 = price + 4.0
-                tp2 = price + 8.0
-                
-                msg = (
-                    f"🚨 *XAUUSD SIGNAL (Smart Free)* 🚨\n\n"
-                    f"🟡 *السعر الحالي:* `{price:.2f}`\n"
-                    f"📊 *الاتجاه:* `STRONG BUY / صاعد`\n\n"
-                    f"🎯 *الأهداف:* \n"
-                    f"🔹 TP1: `{tp1:.2f}`\n"
-                    f"🔹 TP2: `{tp2:.2f}`\n\n"
-                    f"🛑 *وقف الخسارة:* `{sl:.2f}`"
-                )
-                send_telegram_message(msg)
-        except Exception as e:
-            print(f"Loop error: {e}")
+        # حسابات الأهداف البسيطة
+        sl = price - 4.5
+        tp1 = price + 4.0
+        tp2 = price + 8.0
         
-        # النوم لمدة 15 دقيقة
-        time.sleep(900)
-
-# تشغيل الخيط في الخلفية بأمان
-thread = threading.Thread(target=background_loop, daemon=True)
-thread.start()
+        msg = (
+            f"🚨 *XAUUSD SIGNAL (Smart Free)* 🚨\n\n"
+            f"🟡 *السعر الحالي:* `{price:.2f}`\n"
+            f"📊 *الاتجاه:* `STRONG BUY / صاعد`\n\n"
+            f"🎯 *الأهداف:* \n"
+            f"🔹 TP1: `{tp1:.2f}`\n"
+            f"🔹 TP2: `{tp2:.2f}`\n\n"
+            f"🛑 *وقف الخسارة:* `{sl:.2f}`"
+        )
+        
+        # إرسال الرسالة فوراً عند زيارة الرابط
+        send_telegram_message(msg)
+        return f"Signal Sent Successfully! Current Gold Price: {price}"
+        
+    return "Bot is running, but couldn't fetch price right now."
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
