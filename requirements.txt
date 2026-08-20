@@ -1,6 +1,7 @@
 flask
 python-telegram-bot
-yfinance
-pandas
-pandas_ta
 requests
+pandas==2.2.0
+numpy<2.0.0
+yfinance
+pandas-ta
