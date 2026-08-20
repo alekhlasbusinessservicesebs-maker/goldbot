@@ -1,45 +1,46 @@
 import os
 import yfinance as yf
-import pandas as pd
 from flask import Flask
 from telegram import Bot
 import asyncio
 
-app = Flask(__name__)
+app = FlaskName = Flask(__name__)
 
-# التوكن والـ ID
 TELEGRAM_TOKEN = "8871528209:AAElReV2Tv2j2xTpmYR6IGDeo5UTQqTsB1k"
 CHAT_ID = "5760283457"
 
 async def send_signal():
     try:
-        # استخدام yfinance لسحب البيانات
-        ticker = yf.Ticker("GC=F")
-        hist = ticker.history(period="1mo", interval="1h")
+        # سحب سعر الذهب الفوري باستخدام yfinance مباشرة
+        gold = yf.Ticker("GC=F")
+        data = gold.history(period="2d", interval="1h")
         
-        if hist.empty:
-            return "No data"
+        if data.empty:
+            return "No data found"
 
-        # حساب RSI بطريقة مبسطة جداً
-        close = hist['Close']
-        delta = close.diff()
-        gain = (delta.where(delta > 0, 0)).rolling(14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-        rs = gain / loss
-        rsi = 100 - (100 / (1 + rs))
-        current_rsi = rsi.iloc[-1]
-        price = close.iloc[-1]
-
-        # إرسال الإشارة
-        if current_rsi < 30 or current_rsi > 70:
-            signal = "شراء" if current_rsi < 30 else "بيع"
-            bot = Bot(token=TELEGRAM_TOKEN)
-            await bot.send_message(chat_id=CHAT_ID, text=f"إشارة {signal} - سعر: {price:.2f} - RSI: {current_rsi:.2f}")
-            return "Sent"
+        current_price = data['Close'].iloc[-1]
+        prev_price = data['Close'].iloc[-2]
         
-        return "No signal"
+        # طريقة حسابية خفيفة جداً لتحديد الاتجاه بدون pandas
+        diff = current_price - prev_price
+        signal = "شراء BUY 🟢" if diff > 0 else "بيع SELL 🔴"
+
+        message = (
+            f"🔥 *Mody Luck Gold System (Pro)* 🔥\n"
+            f"---------------------------\n"
+            f"💎 السعر الفوري: {current_price:.2f}\n"
+            f"💎 نوع الإشارة: {signal}\n"
+            f"---------------------------\n"
+            f"🎯 الأهداف (TP): {current_price+5:.2f}, {current_price+10:.2f}\n"
+            f"🛡 حماية (SL): {current_price-3:.2f}\n"
+        )
+
+        bot = Bot(token=TELEGRAM_TOKEN)
+        await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode='Markdown')
+        return "Signal Sent Successfully"
+
     except Exception as e:
-        return str(e)
+        return f"Error: {str(e)}"
 
 @app.route('/')
 def home():
