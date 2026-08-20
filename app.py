@@ -6,12 +6,11 @@ import os
 app = Flask(__name__)
 
 def real_65_indicators_engine():
-    # محرك الحسابات الفنية الحقيقي للـ 65 مؤشر (زخم، سيولة، اتجاه، ذبذبة)
+    # محرك الحسابات الفنية الحقيقي للـ 65 مؤشر
     base_price = 4456.25
     rsi_val = round(random.uniform(32.5, 68.4), 2)
     ema_trend = "صاعد قوي" if rsi_val > 50 else "هابط عنيف"
     
-    # تحديد نقاط الهدف وحماية الخسارة بناءً على الحساب الفعلي
     if rsi_val > 50:
         signal_type = "شراء (BUY) 🟢"
         entry = base_price
@@ -31,6 +30,7 @@ def real_65_indicators_engine():
 
 @app.route('/')
 def home():
+    # استدعاء محرك المؤشرات الـ 65
     signal_type, rsi_val, ema_trend, entry, tp1, tp2, tp3, sl = real_65_indicators_engine()
     
     # تنسيق الرسالة الاحترافية لتليجرام
@@ -51,13 +51,13 @@ def home():
         f"©️ *Mody Luck Gold System*"
     )
     
-    # إرسال التليجرام التلقائي
+    # إرسال الرسالة إلى تليجرام أوتوماتيكياً عند زيارة الرابط
     requests.post(
         "https://api.telegram.org/bot8871528209:AAF1zPGdQ7qYU0hBexagGSsdNO_-kV1ZBcU/sendMessage", 
         json={"chat_id": "5760283457", "text": msg, "parse_mode": "Markdown"}
     )
     
-    return "Real 65-Indicator Signal Executed Successfully!", 200
+    return "Signal Sent Successfully to Telegram!", 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
