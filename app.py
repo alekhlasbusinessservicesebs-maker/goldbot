@@ -4,7 +4,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-TELEGRAM_TOKEN = "8871528209:AAElReV2Tv2j2xTpmYR6IGDeo5UTQqTsB1k"
+TELEGRAM_TOKEN = "8871528209:AAEg5xRXZDahlu4VwMVmkM1b7qChGYbbJe0"
 CHAT_ID = "5760283457"
 
 @app.route('/')
