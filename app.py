@@ -4,14 +4,13 @@ from flask import Flask
 from telegram import Bot
 import asyncio
 
-app = FlaskName = Flask(__name__)
+app = Flask(__name__)
 
 TELEGRAM_TOKEN = "8871528209:AAElReV2Tv2j2xTpmYR6IGDeo5UTQqTsB1k"
 CHAT_ID = "5760283457"
 
 async def send_signal():
     try:
-        # سحب سعر الذهب الفوري باستخدام yfinance مباشرة
         gold = yf.Ticker("GC=F")
         data = gold.history(period="2d", interval="1h")
         
@@ -21,12 +20,11 @@ async def send_signal():
         current_price = data['Close'].iloc[-1]
         prev_price = data['Close'].iloc[-2]
         
-        # طريقة حسابية خفيفة جداً لتحديد الاتجاه بدون pandas
         diff = current_price - prev_price
-        signal = "شراء BUY 🟢" if diff > 0 else "بيع SELL 🔴"
+        signal = "شراء BUY 🟢" if diff >= 0 else "بيع SELL 🔴"
 
         message = (
-            f"🔥 *Mody Luck Gold System (Pro)* 🔥\n"
+            f"🔥 *Mody Luck Gold System (Live)* 🔥\n"
             f"---------------------------\n"
             f"💎 السعر الفوري: {current_price:.2f}\n"
             f"💎 نوع الإشارة: {signal}\n"
