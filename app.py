@@ -1,5 +1,6 @@
 import os
 import time
+import datetime
 import threading
 import requests
 from flask import Flask
@@ -53,7 +54,7 @@ def send_signal():
             rsi = 50.0
 
         message = (
-            f"🧞‍♂️ *الجن ابن العفاريت VIP (Smart Pro Engine)* 🧞‍♂️\n"
+            f"🧞‍♂️ *الجن ابن العفاريت VIP (Candle Engine)* 🧞‍♂️\n"
             f"---------------------------\n"
             f"💎 السعر الفوري الحي: `{current_price:.2f}`\n"
             f"💎 نوع الإشارة: {signal}\n"
@@ -66,7 +67,7 @@ def send_signal():
             f"• *TP3:* `{tp3:.2f}`\n\n"
             f"🛑 *حماية الخسارة الآمنة (SL):* `{sl:.2f}`\n"
             f"---------------------------\n"
-            f"⚙️ *محرك التحليل الفني المدمج (Smart Engine)*\n"
+            f"⚙️ *محرك التحليل الفني المدمج (15m Candle Sync)*\n"
             f"©️ *Mody Luck Gold System*"
         )
 
@@ -81,18 +82,29 @@ def send_signal():
     except Exception as e:
         print(f"Error: {e}")
 
-def run_timer():
+def run_candle_timer():
+    """حساب الوقت المتبقي لأقرب شمعة 15 دقيقة حقيقية بالثانية"""
     while True:
-        # الانتظار لمدة 15 دقيقة بالضبط (900 ثانية)
-        time.sleep(900)
+        now = datetime.datetime.now()
+        # حساب الثواني المتبقية حتّى الربع ساعة القادمة (:00, :15, :30, :45)
+        minutes_to_next = 15 - (now.minute % 15)
+        seconds_to_wait = (minutes_to_next * 60) - now.second
+        
+        # الانتظار حتى لحظة إغلاق/افتتاح الشمعة بالظبط
+        time.sleep(seconds_to_wait)
+        
+        # إرسال الإشارة مع بداية الشمعة الجديدة
         send_signal()
+        
+        # نوم بسيط لمدة ثوانٍ لتجنب التكرار في نفس الدقيقة
+        time.sleep(5)
 
-# تشغيل مؤقت الخلفية مع بدء السيرفر
-threading.Thread(target=run_timer, daemon=True).start()
+# تشغيل مؤقت الشموع في الخلفية
+threading.Thread(target=run_candle_timer, daemon=True).start()
 
 @app.route('/')
 def home():
-    return "Bot is running continuously!", 200
+    return "Bot is synced with 15m candles!", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
