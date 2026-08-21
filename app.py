@@ -350,7 +350,21 @@ def calculate_trade_levels(df, direction):
     entry = float(last["close"])
     atr = float(last["ATR"])
 
-    if not np.is
+    if not np.isfinite(atr) or atr <= 0:
+        atr = entry * 0.01
+
+    if direction == "BUY":
+        stop_loss = entry - (atr * 1.5)
+        take_profit = entry + (atr * 3)
+    else:
+        stop_loss = entry + (atr * 1.5)
+        take_profit = entry - (atr * 3)
+
+    return {
+        "entry": round(entry, 2),
+        "stop_loss": round(stop_loss, 2),
+        "take_profit": round(take_profit, 2),
+    }
 
 # ================== إرسال الرسائل إلى Telegram ==================
 
