@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install requests pandas numpy pytz flask
 
       - name: Run Bot Script
         run: python app.py
