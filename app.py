@@ -1,7 +1,4 @@
 import os
-import time
-import datetime
-import threading
 import requests
 from flask import Flask
 
@@ -12,12 +9,13 @@ CHAT_ID = "5760283457"
 
 price_history = []
 
-def send_signal():
+@app.route('/')
+def home():
     global price_history
     try:
         response = requests.get("https://api.gold-api.com/price/XAU", timeout=8)
         if response.status_code != 200:
-            return
+            return "API Waiting", 200
             
         data = response.json()
         current_price = float(data.get('price', 2500.00))
@@ -54,7 +52,7 @@ def send_signal():
             rsi = 50.0
 
         message = (
-            f"🧞‍♂️ *الجن ابن العفاريت VIP (Candle Engine)* 🧞‍♂️\n"
+            f"🧞‍♂️ *الجن ابن العفاريت VIP (Cron Engine)* 🧞‍♂️\n"
             f"---------------------------\n"
             f"💎 السعر الفوري الحي: `{current_price:.2f}`\n"
             f"💎 نوع الإشارة: {signal}\n"
@@ -67,7 +65,7 @@ def send_signal():
             f"• *TP3:* `{tp3:.2f}`\n\n"
             f"🛑 *حماية الخسارة الآمنة (SL):* `{sl:.2f}`\n"
             f"---------------------------\n"
-            f"⚙️ *محرك التحليل الفني المدمج (15m Candle Sync)*\n"
+            f"⚙️ *محرك التحليل الفني المدمج (Cron-Job Sync)*\n"
             f"©️ *Mody Luck Gold System*"
         )
 
@@ -79,32 +77,10 @@ def send_signal():
         }
         
         requests.post(url, json=payload, timeout=5)
+        return f"Signal Sent Successfully at {current_price}!", 200
+
     except Exception as e:
-        print(f"Error: {e}")
-
-def run_candle_timer():
-    """حساب الوقت المتبقي لأقرب شمعة 15 دقيقة حقيقية بالثانية"""
-    while True:
-        now = datetime.datetime.now()
-        # حساب الثواني المتبقية حتّى الربع ساعة القادمة (:00, :15, :30, :45)
-        minutes_to_next = 15 - (now.minute % 15)
-        seconds_to_wait = (minutes_to_next * 60) - now.second
-        
-        # الانتظار حتى لحظة إغلاق/افتتاح الشمعة بالظبط
-        time.sleep(seconds_to_wait)
-        
-        # إرسال الإشارة مع بداية الشمعة الجديدة
-        send_signal()
-        
-        # نوم بسيط لمدة ثوانٍ لتجنب التكرار في نفس الدقيقة
-        time.sleep(5)
-
-# تشغيل مؤقت الشموع في الخلفية
-threading.Thread(target=run_candle_timer, daemon=True).start()
-
-@app.route('/')
-def home():
-    return "Bot is synced with 15m candles!", 200
+        return f"Error: {str(e)}", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
