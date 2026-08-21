@@ -48,11 +48,16 @@ def get_market_data():
     except Exception as e:
         print(f"Error fetching market data: {e}")
         return None
-        def calculate_all_indicators(df):
+def calculate_all_indicators(df):
+    
     close = df["close"]
+    
     high = df["high"]
+    
     low = df["low"]
+    
     open_p = df["open"]
+    
     volume = df["volume"]
 
     df["EMA_9"] = close.ewm(span=9, adjust=False).mean()
