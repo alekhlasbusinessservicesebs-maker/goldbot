@@ -226,8 +226,7 @@ def get_market_data():
     if last["ADX"] >= 20:
         if last["Plus_DI"] > last["Minus_DI"]:
             vote("ADX/DI", "BUY", 1.5)
-        elif last["Minus_DI"] > last["P
-lus_DI"]:
+        elif last["Minus_DI"] > last["Plus_DI"]:
             vote("ADX/DI", "SELL", 1.5)
 
     # CCI
