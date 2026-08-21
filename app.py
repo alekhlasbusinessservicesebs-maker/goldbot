@@ -13,12 +13,12 @@ price_history = []
 def home():
     global price_history
     try:
-        response = requests.get("https://api.gold-api.com/price/XAU", timeout=8)
-        if response.status_code != 200:
-            return "API is sleeping", 200
-            
+        # استخدام API بديل ومستقر لسعر الذهب الفوري
+        response = requests.get("https://data-asg.goldprice.org/dbXRates/USD", timeout=8)
         data = response.json()
-        current_price = float(data.get('price', 2500.00))
+        
+        # استخراج سعر الأوقية الفعلي من الـ API الجديد
+        current_price = float(data['items'][0]['xauPrice'])
         
         price_history.append(current_price)
         if len(price_history) > 5:
@@ -29,26 +29,26 @@ def home():
             if current_price >= sma:
                 signal = "شراء (STRONG BUY) 🟢"
                 trend = "صاعد بذكاء (Momentum Up)"
-                tp1 = current_price + 3.00
-                tp2 = current_price + 6.50
-                tp3 = current_price + 10.00
-                sl = current_price - 4.00
+                tp1 = current_price + 5.00
+                tp2 = current_price + 10.00
+                tp3 = current_price + 15.00
+                sl = current_price - 6.00
                 rsi = 58.4
             else:
                 signal = "بيع (STRONG SELL) 🔴"
                 trend = "هابط بذكاء (Momentum Down)"
-                tp1 = current_price - 3.00
-                tp2 = current_price - 6.50
-                tp3 = current_price - 10.00
-                sl = current_price + 4.00
+                tp1 = current_price - 5.00
+                tp2 = current_price - 10.00
+                tp3 = current_price - 15.00
+                sl = current_price + 6.00
                 rsi = 41.6
         else:
             signal = "محايد / تجميع 🟡"
             trend = "استقرار اولي"
-            tp1 = current_price + 3.00
-            tp2 = current_price + 6.50
-            tp3 = current_price + 10.00
-            sl = current_price - 4.00
+            tp1 = current_price + 5.00
+            tp2 = current_price + 10.00
+            tp3 = current_price + 15.00
+            sl = current_price - 6.00
             rsi = 50.0
 
         message = (
@@ -77,7 +77,7 @@ def home():
         }
         
         requests.post(url, json=payload, timeout=5)
-        return f"Signal Sent! Price: {current_price}", 200
+        return f"Signal Sent! Real Price: {current_price}", 200
 
     except Exception as e:
         return f"Error handled: {str(e)}", 200
