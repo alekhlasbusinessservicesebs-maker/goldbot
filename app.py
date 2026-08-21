@@ -1,6 +1,4 @@
 import os
-import time
-import threading
 import requests
 from flask import Flask
 
@@ -11,12 +9,13 @@ CHAT_ID = "5760283457"
 
 price_history = []
 
-def send_signal():
+@app.route('/')
+def home():
     global price_history
     try:
         response = requests.get("https://api.gold-api.com/price/XAU", timeout=8)
         if response.status_code != 200:
-            return
+            return "API Waiting", 200
             
         data = response.json()
         current_price = float(data.get('price', 2500.00))
@@ -53,7 +52,7 @@ def send_signal():
             rsi = 50.0
 
         message = (
-            f"🧞‍♂️ *الجن ابن العفاريت VIP (Auto Engine)* 🧞‍♂️\n"
+            f"🧞‍♂️ *الجن ابن العفاريت VIP (Smart Pro Engine)* 🧞‍♂️\n"
             f"---------------------------\n"
             f"💎 السعر الفوري الحي: `{current_price:.2f}`\n"
             f"💎 نوع الإشارة: {signal}\n"
@@ -66,7 +65,7 @@ def send_signal():
             f"• *TP3:* `{tp3:.2f}`\n\n"
             f"🛑 *حماية الخسارة الآمنة (SL):* `{sl:.2f}`\n"
             f"---------------------------\n"
-            f"⚙️ *محرك التحليل الفني المدمج (Auto Background)*\n"
+            f"⚙️ *محرك التحليل الفني المدمج (Smart Engine)*\n"
             f"©️ *Mody Luck Gold System*"
         )
 
@@ -78,25 +77,10 @@ def send_signal():
         }
         
         requests.post(url, json=payload, timeout=5)
+        return f"Signal Sent Successfully! Price: {current_price}", 200
+
     except Exception as e:
-        print(f"Error in background task: {e}")
-
-def background_worker():
-    """حلقة تلقائية تعمل في الخلفية كل 15 دقيقة (900 ثانية)"""
-    # استنا دقيقة أول ما السيرفر يقوم عشان يبدأ صح
-    time.sleep(60)
-    while True:
-        send_signal()
-        # الانتظار لمدة 15 دقيقة
-        time.sleep(900)
-
-# تشغيل خيط الخلفية أوتوماتيك مع سيرفر الفلاسك
-t = threading.Thread(target=background_worker, daemon=True)
-t.start()
-
-@app.route('/')
-def home():
-    return "XAUUSD Auto Bot is Running 24/7 in Background!", 200
+        return f"Error: {str(e)}", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
