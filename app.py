@@ -1,4 +1,6 @@
 import os
+import time
+import threading
 import requests
 from flask import Flask
 
@@ -9,12 +11,13 @@ CHAT_ID = "5760283457"
 
 price_history = []
 
-@app.route('/')
-def home():
+def send_signal():
     global price_history
     try:
-        # استخدام الـ API المضمون تماماً للذهب
         response = requests.get("https://api.gold-api.com/price/XAU", timeout=8)
+        if response.status_code != 200:
+            return
+            
         data = response.json()
         current_price = float(data.get('price', 2500.00))
         
@@ -50,7 +53,7 @@ def home():
             rsi = 50.0
 
         message = (
-            f"🧞‍♂️ *الجن ابن العفاريت VIP (Smart Pro Engine)* 🧞‍♂️\n"
+            f"🧞‍♂️ *الجن ابن العفاريت VIP (Auto Engine)* 🧞‍♂️\n"
             f"---------------------------\n"
             f"💎 السعر الفوري الحي: `{current_price:.2f}`\n"
             f"💎 نوع الإشارة: {signal}\n"
@@ -63,7 +66,7 @@ def home():
             f"• *TP3:* `{tp3:.2f}`\n\n"
             f"🛑 *حماية الخسارة الآمنة (SL):* `{sl:.2f}`\n"
             f"---------------------------\n"
-            f"⚙️ *محرك التحليل الفني المدمج (Smart Engine)*\n"
+            f"⚙️ *محرك التحليل الفني المدمج (Auto Background)*\n"
             f"©️ *Mody Luck Gold System*"
         )
 
@@ -75,10 +78,25 @@ def home():
         }
         
         requests.post(url, json=payload, timeout=5)
-        return f"Signal Sent! Price: {current_price}", 200
-
     except Exception as e:
-        return f"Error handled: {str(e)}", 200
+        print(f"Error in background task: {e}")
+
+def background_worker():
+    """حلقة تلقائية تعمل في الخلفية كل 15 دقيقة (900 ثانية)"""
+    # استنا دقيقة أول ما السيرفر يقوم عشان يبدأ صح
+    time.sleep(60)
+    while True:
+        send_signal()
+        # الانتظار لمدة 15 دقيقة
+        time.sleep(900)
+
+# تشغيل خيط الخلفية أوتوماتيك مع سيرفر الفلاسك
+t = threading.Thread(target=background_worker, daemon=True)
+t.start()
+
+@app.route('/')
+def home():
+    return "XAUUSD Auto Bot is Running 24/7 in Background!", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
