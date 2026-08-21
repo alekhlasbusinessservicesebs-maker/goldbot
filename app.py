@@ -1,4 +1,6 @@
 import os
+import time
+import threading
 import requests
 from flask import Flask
 
@@ -9,13 +11,12 @@ CHAT_ID = "5760283457"
 
 price_history = []
 
-@app.route('/')
-def home():
+def send_signal():
     global price_history
     try:
         response = requests.get("https://api.gold-api.com/price/XAU", timeout=8)
         if response.status_code != 200:
-            return "API Waiting", 200
+            return
             
         data = response.json()
         current_price = float(data.get('price', 2500.00))
@@ -77,10 +78,21 @@ def home():
         }
         
         requests.post(url, json=payload, timeout=5)
-        return f"Signal Sent Successfully! Price: {current_price}", 200
-
     except Exception as e:
-        return f"Error: {str(e)}", 200
+        print(f"Error: {e}")
+
+def run_timer():
+    while True:
+        # الانتظار لمدة 15 دقيقة بالضبط (900 ثانية)
+        time.sleep(900)
+        send_signal()
+
+# تشغيل مؤقت الخلفية مع بدء السيرفر
+threading.Thread(target=run_timer, daemon=True).start()
+
+@app.route('/')
+def home():
+    return "Bot is running continuously!", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
