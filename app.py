@@ -183,12 +183,12 @@ def calculate_all_indicators(df):
     df["TRIX"] = ema3.pct_change() * 100
 
     return df
-    def score_signal(df):
+def score_signal(df):
+    
     last = df.iloc[-2]  # آخر شمعة مكتملة، وليس الشمعة الحالية
-    scores = {
-        "BUY": 0.0,
-        "SELL": 0.0,
-    }
+    
+    scores = {"BUY": 0.0,"SELL": 0.0,}
+   
     reasons = []
 
     def vote(name, direction, weight=1.0):
