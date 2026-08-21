@@ -619,7 +619,9 @@ def calculate_signal(df):
     vote(
         close > current["BB_Mid"],
         close < current["BB_Mid"],
-
+        1.0,
+        "Bollinger Bands",
+    )
 # ================== نقاط الخدمة والتشغيل ==================
 
 @app.get("/")
