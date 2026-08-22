@@ -679,9 +679,8 @@ def process_market():
 ⚠️ لا توجد أفضلية واضحة للشراء أو البيع.
 راقب الشارت ولا تدخل إلا بعد تأكيد الحركة.
 """
-        sent = send_telegram_message(message)
-        print(f"WAIT message sent: {sent}")
-        return
+    sent = send_telegram_message(message)
+    print(f"Signal sent: {sent}")
         
     message = f"""
 🧞‍♂️ VIP (Live Trend) الجن ابن العفاريت 🧞‍♂️
