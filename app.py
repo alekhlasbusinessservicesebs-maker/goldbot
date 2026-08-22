@@ -456,6 +456,9 @@ def news_volatility_filter(df):
 
 # ================== تحليل الإشارة ==================
 
+sent = send_telegram_message(message)
+    print(f"Signal sent: {sent}")
+
 def calculate_signal(df):
     if df is None or len(df) < 80:
         return {
