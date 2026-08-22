@@ -668,11 +668,21 @@ def process_market():
     signal = calculate_signal(df)
 
     if signal["type"] == "WAIT":
-        print(f"No strong signal. Score: {signal['score']}")
+        last = df.iloc[-2]
+        message = f"""
+🧞‍♂️ تحليل الذهب كل 15 دقيقة
+
+⏸️ الاتجاه: انتظار / غير مؤكد
+💎 السعر الحالي: {format_price(last["close"])}
+📊 قوة الاتجاه: {signal["score"]}%
+
+⚠️ لا توجد أفضلية واضحة للشراء أو البيع.
+راقب الشارت ولا تدخل إلا بعد تأكيد الحركة.
+"""
+        sent = send_telegram_message(message)
+        print(f"WAIT message sent: {sent}")
         return
-
-    levels = calculate_trade_levels(df, signal["type"])
-
+        
     message = f"""
 🧞‍♂️ VIP (Live Trend) الجن ابن العفاريت 🧞‍♂️
 
