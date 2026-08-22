@@ -670,14 +670,33 @@ def scheduled_loop():
 
 if __name__ == "__main__":
     if os.getenv("GITHUB_ACTIONS") == "true":
-        # تشغيل مرة واحدة فقط عند التشغيل من GitHub Actions ثم الإنهاء
         try:
+            token = os.getenv("TELEGRAM_BOT_TOKEN")
+            chat_id = os.getenv("TELEGRAM_CHAT_ID")
+
+            if not token or not chat_id:
+                raise RuntimeError("Telegram secrets are missing")
+
+            url = f"https://api.telegram.org/bot{token}/sendMessage"
+            response = requests.post(
+                url,
+                data={
+                    "chat_id": chat_id,
+                    "text": "✅ اختبار من GitHub Actions - البوت يعمل",
+                },
+                timeout=20,
+            )
+
+            print("Telegram response:", response.text)
+            response.raise_for_status()
+
             process_market()
             print("Processing completed successfully.")
+
         except Exception as exc:
             print(f"Processing error: {exc}")
+            raise
     else:
-        # تشغيل السيرفر الدائم عند النشر على Render أو استضافة أخرى
         worker = threading.Thread(target=scheduled_loop, daemon=True)
         worker.start()
 
