@@ -622,6 +622,67 @@ def calculate_signal(df):
         1.0,
         "Bollinger Bands",
     )
+
+# كمل داخل calculate_signal قبل نهاية الدالة
+    vote(
+        close > current["Donchian_Upper"],
+        close < current["Donchian_Lower"],
+        1.0,
+        "Donchian",
+    )
+
+    buy_score = buy_votes
+    sell_score = sell_votes
+    best_score = max(buy_score, sell_score)
+
+    if total_weight <= 0:
+        signal_type = "WAIT"
+        agreement = 0.0
+    else:
+        signal_type = "BUY" if buy_score > sell_score else "SELL"
+        agreement = (best_score / total_weight) * 100
+
+        if agreement < MIN_SCORE_TO_SIGNAL:
+            signal_type = "WAIT"
+
+    return {
+        "type": signal_type,
+        "score": round(agreement, 2),
+        "reason": " | ".join(reasons),
+    }
+
+
+def process_market():
+    global last_candle_time, last_signal_type
+
+    df = get_market_data()
+
+    if df is None:
+        return
+
+    df = calculate_all_indicators(df)
+
+    signal = calculate_signal(df)
+
+    if signal["type"] == "WAIT":
+        print(f"No strong signal. Score: {signal['score']}")
+        return
+
+    levels = calculate_trade_levels(df, signal["type"])
+
+    message = f"""
+🧞‍♂️ VIP (Live Trend) الجن ابن العفاريت 🧞‍♂️
+
+💎 السعر الفوري الحي: {format_price(levels["entry"])}
+💎 نوع الإشارة: {"شراء 🟢" if signal["type"] == "BUY" else "بيع 🔴"}
+💎 نقطة الدخول: {format_price(levels["entry"])}
+
+🎯 الهدف: {format_price(levels["take_profit"])}
+🛑 وقف الخسارة: {format_price(levels["stop_loss"])}
+
+📊 قوة الإشارة: {signal["score"]}%
+⚙️ تحليل الزخم اللحظي الحقيقي
+"""
 # ================== نقاط الخدمة والتشغيل ==================
 
 @app.get("/")
@@ -670,25 +731,8 @@ def scheduled_loop():
 if __name__ == "__main__":
     if os.getenv("GITHUB_ACTIONS") == "true":
         try:
-            token = os.getenv("TELEGRAM_BOT_TOKEN")
-            chat_id = os.getenv("TELEGRAM_CHAT_ID")
-
-            if not token or not chat_id:
-                raise RuntimeError("Telegram secrets are missing")
-
-            url = f"https://api.telegram.org/bot{token}/sendMessage"
-            response = requests.post(
-                url,
-                data={
-                    "chat_id": chat_id,
-                    "text": "✅ اختبار من GitHub Actions - البوت يعمل",
-                },
-                timeout=20,
-            )
-
-            print("Telegram response:", response.text)
-            response.raise_for_status()
-            print("Telegram test completed successfully.")
+            process_market()
+            print("Processing completed successfully.")
 
         except Exception as exc:
             print(f"Processing error: {exc}")
