@@ -658,7 +658,16 @@ def process_market():
     df = get_market_data()
 
     if df is None:
-        return
+        message = """
+🧞‍♂️ تحليل الذهب كل 15 دقيقة
+
+⏸️ السوق مغلق أو لا توجد بيانات حاليًا.
+لا توجد إشارة تداول الآن.
+"""
+        
+     sent = send_telegram_message(message)
+    print(f"Market closed message sent: {sent}")
+    return
 
     df = calculate_all_indicators(df)
 
