@@ -6,7 +6,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import pytz
-from flask import Flask
+from flask import Flask, jsonify
+
 
 app = Flask(__name__)
 
