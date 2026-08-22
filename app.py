@@ -708,12 +708,9 @@ def process_market():
 
 @app.get("/")
 def home():
-    return {
-        "status": "running",
-        "service": "ModyGoldBot",
-        "timezone": TIMEZONE_NAME,
-        "timeframe": TIMEFRAME,
-    }
+    # الرد المبسط لمنع مشكلة cron-job "output too large"
+    return jsonify({"status": "active", "message": "Bot is alive"}), 200
+
 
 
 @app.get("/health")
