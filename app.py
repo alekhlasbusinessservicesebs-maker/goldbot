@@ -1,4 +1,4 @@
-import os
+Import os
 import time
 import threading
 import requests
@@ -663,47 +663,45 @@ def process_market():
             "⏸️ السوق مغلق أو لا توجد بيانات حاليًا.\n"
             "لا توجد إشارة تداول الآن."
         )
-        send_telegram_message(message)
+        sent = send_telegram_message(message)
+        print(f"Market closed message sent: {sent}")
         return
 
     df = calculate_all_indicators(df)
-    
-    # استخدام الدالة الأقوى اللي بتحسب النقاط والأوزان بدقة
-    signal = score_signal(df)
-    
-    if signal["direction"] == "WAIT" or signal["score"] < MIN_SCORE_TO_SIGNAL:
-        last = df.iloc[-2]
-        message = (
-            f"🧞‍♂️ تحليل الذهب كل 15 دقيقة\n\n"
-            f"⏸️ الاتجاه: انتظار / غير مؤكد\n"
-            f"💎 السعر الحالي: {format_price(last['close'])}\n"
-            f"📊 قوة الاتجاه: {signal['score']}%\n\n"
-            f"⚠️ لا توجد أفضلية واضحة للشراء أو البيع.\n"
-            f"راقب الشارت ولا تدخل إلا بعد تأكيد الحركة."
-        )
-        send_telegram_message(message)
-        print("Wait signal sent.")
-        return
 
-    # حساب الأهداف ووقف الخسارة طالما فيه إشارة واضحة (BUY أو SELL)
-    levels = calculate_trade_levels(df, signal["direction"])
-    
-    direction_text = "شراء 🟢" if signal["direction"] == "BUY" else "بيع 🔴"
-    
-    message = (
-        f"🧞‍♂️ *VIP (Live Trend) الجن ابن العفاريت* 🧞‍♂️\n\n"
-        f"💎 السعر الفوري الحي: `{format_price(levels['entry'])}`\n"
-        f"💎 نوع الإشارة: {direction_text}\n"
-        f"💎 نقطة الدخول: `{format_price(levels['entry'])}`\n\n"
-        f"🎯 الهدف: `{format_price(levels['take_profit'])}`\n"
-        f"🛑 وقف الخسارة: `{format_price(levels['stop_loss'])}`\n\n"
-        f"📊 قوة الإشارة: `{signal['score']}%`\n"
-        f"⚙️ تحليل الزخم اللحظي الحقيقي"
-    )
+    signal = calculate_signal(df)
+
+    if signal["type"] == "WAIT":
+        last = df.iloc[-2]
+        message = f"""
+🧞‍♂️ تحليل الذهب كل 15 دقيقة
+
+⏸️ الاتجاه: انتظار / غير مؤكد
+💎 السعر الحالي: {format_price(last["close"])}
+📊 قوة الاتجاه: {signal["score"]}%
+
+⚠️ لا توجد أفضلية واضحة للشراء أو البيع.
+راقب الشارت ولا تدخل إلا بعد تأكيد الحركة.
+"""
+    sent = send_telegram_message(message)
+    print(f"Signal sent: {sent}")
+        
+    message = f"""
+🧞‍♂️ VIP (Live Trend) الجن ابن العفاريت 🧞‍♂️
+
+💎 السعر الفوري الحي: {format_price(levels["entry"])}
+💎 نوع الإشارة: {"شراء 🟢" if signal["type"] == "BUY" else "بيع 🔴"}
+💎 نقطة الدخول: {format_price(levels["entry"])}
+
+🎯 الهدف: {format_price(levels["take_profit"])}
+🛑 وقف الخسارة: {format_price(levels["stop_loss"])}
+
+📊 قوة الإشارة: {signal["score"]}%
+⚙️ تحليل الزخم اللحظي الحقيقي
+"""
     
     sent = send_telegram_message(message)
     print(f"Signal sent: {sent}")
-
 # ================== نقاط الخدمة والتشغيل ==================
 
 @app.get("/")
@@ -764,4 +762,3 @@ if __name__ == "__main__":
 
         port = int(os.getenv("PORT", "10000"))
         app.run(host="0.0.0.0", port=port)
-
