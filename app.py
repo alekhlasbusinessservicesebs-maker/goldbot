@@ -667,7 +667,6 @@ def scheduled_loop():
 
         time.sleep(300)
 
-
 if __name__ == "__main__":
     if os.getenv("GITHUB_ACTIONS") == "true":
         try:
@@ -689,9 +688,7 @@ if __name__ == "__main__":
 
             print("Telegram response:", response.text)
             response.raise_for_status()
-
-            process_market()
-            print("Processing completed successfully.")
+            print("Telegram test completed successfully.")
 
         except Exception as exc:
             print(f"Processing error: {exc}")
@@ -702,3 +699,4 @@ if __name__ == "__main__":
 
         port = int(os.getenv("PORT", "10000"))
         app.run(host="0.0.0.0", port=port)
+
