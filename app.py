@@ -669,8 +669,17 @@ def scheduled_loop():
 
 
 if __name__ == "__main__":
-    worker = threading.Thread(target=scheduled_loop, daemon=True)
-    worker.start()
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        # تشغيل مرة واحدة فقط عند التشغيل من GitHub Actions ثم الإنهاء
+        try:
+            process_market()
+            print("Processing completed successfully.")
+        except Exception as exc:
+            print(f"Processing error: {exc}")
+    else:
+        # تشغيل السيرفر الدائم عند النشر على Render أو استضافة أخرى
+        worker = threading.Thread(target=scheduled_loop, daemon=True)
+        worker.start()
 
-    port = int(os.getenv("PORT", "10000"))
-    app.run(host="0.0.0.0", port=port)
+        port = int(os.getenv("PORT", "10000"))
+        app.run(host="0.0.0.0", port=port)
